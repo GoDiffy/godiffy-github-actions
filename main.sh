@@ -13,6 +13,7 @@ echo "SITE_ID: '$INPUT_SITE_ID'"
 echo "=== END DEBUG ==="
 
 # Get inputs from action.yml (GitHub Actions sets these as env vars)
+# Handle both hyphen and underscore formats for backward compatibility
 API_KEY="${INPUT_API_KEY}"
 IMAGES_PATH="${INPUT_IMAGES_PATH}"
 SITE_ID="${INPUT_SITE_ID}"
