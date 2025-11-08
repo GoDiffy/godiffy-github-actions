@@ -30,9 +30,9 @@ jobs:
       - name: Upload screenshots to Godiffy
         uses: MichaelFisher1997/godiffy-gitactions@v1
         with:
-          api-key: ${{ secrets.GODIFFY_API_KEY }}
-          images-path: './screenshots'
-          site-id: 'my-website'
+          api_key: ${{ secrets.GODIFFY_API_KEY }}
+          images_path: './screenshots'
+          site_id: 'my-website'
 ```
 
 ### Mode 2: Upload + Generate Report
@@ -53,12 +53,12 @@ jobs:
       - name: Upload and compare screenshots
         uses: MichaelFisher1997/godiffy-gitactions@v1
         with:
-          api-key: ${{ secrets.GODIFFY_API_KEY }}
-          images-path: './screenshots'
-          site-id: 'my-website'
-          create-report: true
-          baseline-branch: 'main'
-          report-name: 'PR #${{ github.event.pull_request.number }} Visual Regression'
+          api_key: ${{ secrets.GODIFFY_API_KEY }}
+          images_path: './screenshots'
+          site_id: 'my-website'
+          create_report: true
+          baseline_branch: 'main'
+          report_name: 'PR #${{ github.event.pull_request.number }} Visual Regression'
 ```
 
 ## Inputs
@@ -67,9 +67,9 @@ jobs:
 
 | Input | Description |
 |-------|-------------|
-| `api-key` | Godiffy API key for authentication |
-| `images-path` | Path to folder containing images (relative or absolute) |
-| `site-id` | Godiffy site identifier |
+| `api_key` | Godiffy API key for authentication |
+| `images_path` | Path to folder containing images (relative or absolute) |
+| `site_id` | Godiffy site identifier |
 
 ### Optional Inputs
 
@@ -77,14 +77,14 @@ jobs:
 |-------|---------|-------------|
 | `branch` | `${{ github.ref_name }}` | Git branch name |
 | `commit` | `${{ github.sha }}` | Git commit SHA |
-| `base-url` | `https://godiffy-backend-dev.up.railway.app` | Godiffy API base URL |
-| `create-report` | `false` | Whether to generate a comparison report |
-| `baseline-branch` | - | Branch to compare against (required if `create-report: true`) |
-| `baseline-commit` | `latest` | Commit SHA to compare against |
-| `report-name` | Auto-generated | Custom name for the report |
-| `report-description` | - | Description for the report |
-| `comparison-algorithm` | `pixelmatch` | Algorithm to use (`pixelmatch`, `ssim`) |
-| `comparison-threshold` | `0.1` | Threshold for differences (0.0-1.0) |
+| `base_url` | `https://godiffy-backend-dev.up.railway.app` | Godiffy API base URL |
+| `create_report` | `false` | Whether to generate a comparison report |
+| `baseline_branch` | - | Branch to compare against (required if `create_report: true`) |
+| `baseline_commit` | `latest` | Commit SHA to compare against |
+| `report_name` | Auto-generated | Custom name for the report |
+| `report_description` | - | Description for the report |
+| `comparison_algorithm` | `pixelmatch` | Algorithm to use (`pixelmatch`, `ssim`) |
+| `comparison_threshold` | `0.1` | Threshold for differences (0.0-1.0) |
 
 ## Outputs
 
@@ -184,9 +184,9 @@ jobs:
       - name: Upload screenshots
         uses: MichaelFisher1997/godiffy-gitactions@v1
         with:
-          api-key: ${{ secrets.GODIFFY_API_KEY }}
-          images-path: './screenshots/${{ matrix.browser }}'
-          site-id: 'my-app'
+          api_key: ${{ secrets.GODIFFY_API_KEY }}
+          images_path: './screenshots/${{ matrix.browser }}'
+          site_id: 'my-app'
           branch: '${{ github.ref_name }}-${{ matrix.browser }}'
 ```
 
@@ -194,7 +194,7 @@ jobs:
 
 ### Common Issues
 
-#### "api-key is required"
+#### "api_key is required"
 Ensure you've added `GODIFFY_API_KEY` to your repository secrets.
 
 #### "No matching baseline images found"
@@ -213,13 +213,13 @@ Add debug output to troubleshoot issues:
 
 ```yaml
 - name: Upload with debug
-  uses: godiffy/upload-action@v1
-  env:
-    ACTIONS_STEP_DEBUG: true
-  with:
-    api-key: ${{ secrets.GODIFFY_API_KEY }}
-    images-path: './screenshots'
-    site-id: 'my-site'
+        uses: MichaelFisher1997/godiffy-gitactions@v1
+        env:
+          ACTIONS_STEP_DEBUG: true
+        with:
+          api_key: ${{ secrets.GODIFFY_API_KEY }}
+          images_path: './screenshots'
+          site_id: 'my-site'
 ```
 
 ## API Reference

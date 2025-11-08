@@ -6,13 +6,13 @@ branding:
   color: 'blue'
 
 inputs:
-  api-key:
+  api_key:
     description: 'Godiffy API key for authentication'
     required: true
-  images-path:
+  images_path:
     description: 'Path to folder containing images (relative or absolute)'
     required: true
-  site-id:
+  site_id:
     description: 'Godiffy site identifier'
     required: true
   branch:
@@ -23,32 +23,32 @@ inputs:
     description: 'Git commit SHA'
     required: false
     default: ${{ github.sha }}
-  base-url:
+  base_url:
     description: 'Godiffy API base URL'
     required: false
     default: 'https://godiffy-backend-dev.up.railway.app'
-  create-report:
+  create_report:
     description: 'Whether to generate a comparison report'
     required: false
     default: 'false'
-  baseline-branch:
+  baseline_branch:
     description: 'Branch to compare against (required if create-report is true)'
     required: false
-  baseline-commit:
+  baseline_commit:
     description: 'Commit SHA to compare against'
     required: false
     default: 'latest'
-  report-name:
+  report_name:
     description: 'Custom name for the report'
     required: false
-  report-description:
+  report_description:
     description: 'Description for the report'
     required: false
-  comparison-algorithm:
+  comparison_algorithm:
     description: 'Algorithm to use (pixelmatch, ssim)'
     required: false
     default: 'pixelmatch'
-  comparison-threshold:
+  comparison_threshold:
     description: 'Threshold for differences (0.0-1.0)'
     required: false
     default: '0.1'
