@@ -74,6 +74,20 @@ runs:
   steps:
     - name: Run Godiffy action
       shell: bash
+      env:
+        INPUT_API_KEY: ${{ inputs.api-key }}
+        INPUT_IMAGES_PATH: ${{ inputs.images-path }}
+        INPUT_SITE_ID: ${{ inputs.site-id }}
+        INPUT_BRANCH: ${{ inputs.branch }}
+        INPUT_COMMIT: ${{ inputs.commit }}
+        INPUT_BASE_URL: ${{ inputs.base-url }}
+        INPUT_CREATE_REPORT: ${{ inputs.create-report }}
+        INPUT_BASELINE_BRANCH: ${{ inputs.baseline-branch }}
+        INPUT_BASELINE_COMMIT: ${{ inputs.baseline-commit }}
+        INPUT_REPORT_NAME: ${{ inputs.report-name }}
+        INPUT_REPORT_DESCRIPTION: ${{ inputs.report-description }}
+        INPUT_COMPARISON_ALGORITHM: ${{ inputs.comparison-algorithm }}
+        INPUT_COMPARISON_THRESHOLD: ${{ inputs.comparison-threshold }}
       run: |
         chmod +x ${{ github.action_path }}/main.sh
         chmod +x ${{ github.action_path }}/upload.sh
