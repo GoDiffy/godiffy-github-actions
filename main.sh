@@ -1,6 +1,17 @@
 #!/bin/bash
 set -e
 
+# Add debugging to see what environment variables are being set
+echo "=== DEBUG: All INPUT_ environment variables ==="
+env | grep "^INPUT_" | sort
+echo "=== END DEBUG ==="
+echo "=== DEBUG: Input values ==="
+echo "API_KEY length: ${#INPUT_API_KEY}"
+echo "API_KEY is empty: $([ -z "$INPUT_API_KEY" ] && echo "YES" || echo "NO")"
+echo "IMAGES_PATH: '$INPUT_IMAGES_PATH'"
+echo "SITE_ID: '$INPUT_SITE_ID'"
+echo "=== END DEBUG ==="
+
 # Get inputs from action.yml (GitHub Actions sets these as env vars)
 API_KEY="${INPUT_API_KEY}"
 IMAGES_PATH="${INPUT_IMAGES_PATH}"
