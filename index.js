@@ -3,7 +3,7 @@ import path from 'node:path';
 import fsSync from 'node:fs';
 
 function getInput(name, { required = false, defaultValue } = {}) {
-  const key = `INPUT_${name.replace(/ /g, '_').toUpperCase()}`;
+  const key = `INPUT_${name.replace(/-/g, '_').replace(/ /g, '_').toUpperCase()}`;
   const val = process.env[key];
   if ((val === undefined || val === '') && required && defaultValue === undefined) {
     logError(`Input "${name}" is required but was not provided.`);
