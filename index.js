@@ -230,7 +230,7 @@ async function main() {
   const candidateCommit = process.env.GITHUB_SHA || '';
   const eventName = process.env.GITHUB_EVENT_NAME || '';
 
-  logInfo('Starting GoDiffy action...');
+  logInfo('Starting GoDiffy action v2...');
 
   // Upload candidate images
   const candidateUploads = await uploadScreenshots({
