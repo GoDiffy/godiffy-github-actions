@@ -14,6 +14,14 @@ REPORT_DESCRIPTION="${10}"
 ALGORITHM="${11}"
 THRESHOLD="${12}"
 
+echo "DEBUG: Starting report generation..."
+echo "DEBUG: BASELINE_BRANCH=$BASELINE_BRANCH"
+echo "DEBUG: BASELINE_COMMIT=$BASELINE_COMMIT"
+echo "DEBUG: CANDIDATE_BRANCH=$CANDIDATE_BRANCH"
+echo "DEBUG: CANDIDATE_COMMIT=$CANDIDATE_COMMIT"
+echo "DEBUG: SITE_ID=$SITE_ID"
+echo "DEBUG: BASE_URL=$BASE_URL"
+
 echo "Fetching baseline uploads from $BASELINE_BRANCH@$BASELINE_COMMIT..."
 
 # Fetch baseline uploads
@@ -52,6 +60,7 @@ else
 fi
 
 echo "DEBUG: Baseline uploads: $BASELINE_UPLOADS"
+echo "DEBUG: Baseline uploads count: $(echo "$BASELINE_UPLOADS" | jq '. | length')"
 
 # Match candidate uploads with baseline uploads by path
 echo "DEBUG: Upload results: $UPLOAD_RESULTS"
@@ -86,8 +95,13 @@ while IFS= read -r candidate; do
   fi
 done < <(echo "$CANDIDATE_UPLOADS" | jq -c '.[]')
 
+echo "DEBUG: Total comparisons built: ${#COMPARISONS[@]}"
+echo "DEBUG: Comparisons array: $(printf '%s\n' "${COMPARISONS[@]}" | jq -s '.')"
+
 if [ ${#COMPARISONS[@]} -eq 0 ]; then
   echo "::error::No matching baseline images found. Ensure $BASELINE_BRANCH has uploaded screenshots."
+  echo "DEBUG: Baseline uploads: $BASELINE_UPLOADS"
+  echo "DEBUG: Candidate uploads: $CANDIDATE_UPLOADS"
   exit 1
 fi
 
