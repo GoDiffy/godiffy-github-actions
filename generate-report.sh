@@ -38,10 +38,17 @@ BASELINE_RESPONSE=$(curl -s \
   -H "Authorization: Bearer $API_KEY" \
   "$BASE_URL/api/v2/sites/$SITE_ID/uploads?branch=$(printf %s "$BASELINE_BRANCH" | jq -sRr @uri)&commit=$(printf %s "$BASELINE_COMMIT" | jq -sRr @uri)")
 
-BASELINE_UPLOADS=$(echo "$BASELINE_RESPONSE" | jq -c '.uploads')
+echo "DEBUG: Baseline response: $BASELINE_RESPONSE"
+
+# Handle different response structures
+BASELINE_UPLOADS=$(echo "$BASELINE_RESPONSE" | jq -c 'if .uploads then .uploads else . end')
+
+echo "DEBUG: Baseline uploads: $BASELINE_UPLOADS"
 
 # Match candidate uploads with baseline uploads by path
+echo "DEBUG: Upload results: $UPLOAD_RESULTS"
 CANDIDATE_UPLOADS=$(echo "$UPLOAD_RESULTS" | jq -c '.successful')
+echo "DEBUG: Candidate uploads: $CANDIDATE_UPLOADS"
 COMPARISONS=()
 
 while IFS= read -r candidate; do
