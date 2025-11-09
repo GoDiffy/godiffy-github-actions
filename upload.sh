@@ -55,7 +55,7 @@ while IFS= read -r -d '' file; do
     -H "Authorization: Bearer $API_KEY" \
     -H "Content-Type: application/json" \
     -d @"$TEMP_JSON" \
-    "$BASE_URL/api/v2/uploads")
+    "$BASE_URL/api/v2/sites/$SITE_ID/uploads")
   
   rm -f "$TEMP_JSON"
   
@@ -70,7 +70,7 @@ else
     if echo "$BODY" | jq . >/dev/null 2>&1; then
       ERROR_MSG=$(echo "$BODY" | jq -r '.error // "Unknown error"')
     else
-      ERROR_MSG="Invalid JSON response: $BODY"
+      ERROR_MSG="Invalid JSON response: HTML 405 error"
     fi
     FAILED+=("{\"file\":\"$API_PATH\",\"error\":\"$ERROR_MSG\"}")
     echo "::error::❌ Failed to upload $API_PATH: $ERROR_MSG" >&2
