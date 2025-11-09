@@ -46,13 +46,18 @@ while IFS= read -r -d '' file; do
     "$CONTENT_TYPE" \
     "$BASE64_DATA")
   
-  # Upload using JSON with base64 data
+  # Upload using JSON with base64 data via temp file
+  TEMP_JSON=$(mktemp)
+  echo "$JSON_PAYLOAD" > "$TEMP_JSON"
+  
   RESPONSE=$(curl -s -w "\n%{http_code}" \
     -X POST \
     -H "Authorization: Bearer $API_KEY" \
     -H "Content-Type: application/json" \
-    -d "$JSON_PAYLOAD" \
+    -d @"$TEMP_JSON" \
     "$BASE_URL/api/v2/uploads")
+  
+  rm -f "$TEMP_JSON"
   
   HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
   BODY=$(echo "$RESPONSE" | sed '$d')
