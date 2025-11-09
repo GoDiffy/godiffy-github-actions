@@ -428,11 +428,6 @@ async function main() {
     return;
   }
 
-  if (eventName !== 'pull_request') {
-    logInfo(`create-report is true but event is "${eventName}", not "pull_request"; skipping comparison.`);
-    return;
-  }
-
   // Resolve baseline commit
   const baselineCommit =
     baselineCommitInput === 'latest'
