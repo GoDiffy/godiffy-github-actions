@@ -6,7 +6,7 @@ echo "DEBUG: All environment variables:" >&2
 env | grep -E '^(GITHUB_|INPUT_|)' | sort >&2
 
 # Debug trap to catch where script fails
-trap 'echo "DEBUG: Script failed at line $LINENO with exit code $?" >&2' ERR
+trap 'echo "DEBUG: Script failed at line $LINENO with exit code $?" >&2; echo "DEBUG: Command was: $BASH_COMMAND" >&2' ERR
 
 echo "DEBUG: generate-report.sh started successfully!"
 echo "DEBUG: Script started with $# arguments"
@@ -37,15 +37,24 @@ echo "Fetching baseline uploads from $BASELINE_BRANCH@$BASELINE_COMMIT..."
 
 # Fetch baseline uploads
 if [ "$BASELINE_COMMIT" = "latest" ]; then
+  echo "DEBUG: Looking for latest uploads on branch $BASELINE_BRANCH" >&2
   # Get all uploads for the branch and find the most recent commit
+  BASELINE_URL="$BASE_URL/api/v2/sites/$SITE_ID/uploads?branch=$(printf %s "$BASELINE_BRANCH" | jq -sRr @uri)"
+  echo "DEBUG: Fetching from: $BASELINE_URL" >&2
+  
   BASELINE_RESPONSE=$(curl -s \
     -H "Authorization: Bearer $API_KEY" \
-    "$BASE_URL/api/v2/sites/$SITE_ID/uploads?branch=$(printf %s "$BASELINE_BRANCH" | jq -sRr @uri)")
+    "$BASELINE_URL")
+  
+  echo "DEBUG: Baseline API response: $BASELINE_RESPONSE" >&2
   
   BASELINE_COMMIT=$(echo "$BASELINE_RESPONSE" | jq -r '.uploads[0].commit // empty')
   
+  echo "DEBUG: Extracted baseline commit: $BASELINE_COMMIT" >&2
+  
   if [ -z "$BASELINE_COMMIT" ]; then
     echo "::error::No uploads found for branch $BASELINE_BRANCH"
+    echo "DEBUG: Full API response was: $BASELINE_RESPONSE" >&2
     exit 1
   fi
   
