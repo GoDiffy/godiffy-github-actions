@@ -1,95 +1,58 @@
-name: 'Godiffy Visual Regression'
-description: 'Upload visual regression test screenshots to Godiffy and generate comparison reports'
-author: 'Godiffy'
+name: 'GoDiffy Visual Regression'
+description: 'Upload visual regression test screenshots to GoDiffy and generate comparison reports'
+author: 'GoDiffy'
 branding:
   icon: 'camera'
   color: 'blue'
 
 inputs:
   api-key:
-    description: 'Godiffy API key for authentication'
-    required: true
-  images-path:
-    description: 'Path to folder containing images (relative or absolute)'
+    description: 'GoDiffy API key for authentication'
     required: true
   site-id:
-    description: 'Godiffy site identifier'
+    description: 'GoDiffy Site ID'
     required: true
-  branch:
-    description: 'Git branch name'
-    required: false
-    default: ${{ github.ref_name }}
-  commit:
-    description: 'Git commit SHA'
-    required: false
-    default: ${{ github.sha }}
+  images-path:
+    description: 'Path to directory containing screenshots'
+    required: true
   base-url:
-    description: 'Godiffy API base URL'
-    required: false
-    default: 'https://godiffy-backend-dev.up.railway.app'
-  create-report:
-    description: 'Whether to generate a comparison report'
-    required: false
-    default: 'false'
+    description: 'GoDiffy API base URL'
+    required: true
   baseline-branch:
-    description: 'Branch to compare against (required if create-report is true)'
+    description: 'Branch to use as baseline'
     required: false
+    default: 'master'
   baseline-commit:
-    description: 'Commit SHA to compare against'
+    description: 'Commit SHA or "latest"'
     required: false
     default: 'latest'
-  report-name:
-    description: 'Custom name for the report'
+  create-report:
+    description: 'Whether to run comparisons and save as report'
     required: false
-  report-description:
-    description: 'Description for the report'
-    required: false
-  comparison-algorithm:
-    description: 'Algorithm to use (pixelmatch, ssim)'
+    default: 'false'
+  algorithm:
+    description: 'Comparison algorithm (pixelmatch or ssim)'
     required: false
     default: 'pixelmatch'
-  comparison-threshold:
-    description: 'Threshold for differences (0.0-1.0)'
+  threshold:
+    description: 'Similarity threshold (0.0-1.0, where 1.0 = identical)'
     required: false
-    default: '0.1'
+    default: '0.9'
 
 outputs:
-  upload-count:
-    description: 'Number of images successfully uploaded'
-  failed-count:
-    description: 'Number of images that failed to upload'
-  upload-ids:
-    description: 'JSON array of upload IDs'
-  report-id:
-    description: 'Report ID if report was created'
-  report-url:
-    description: 'URL to view the report in Godiffy dashboard'
-  differences-found:
-    description: 'Boolean indicating if visual differences were detected'
   total-comparisons:
-    description: 'Number of image comparisons performed'
+    description: 'Number of images compared'
+  passed-comparisons:
+    description: 'Number of comparisons that passed threshold'
+  failed-comparisons:
+    description: 'Number of comparisons that failed threshold'
+  average-similarity:
+    description: 'Average similarity percentage (0-100) across all comparisons'
+  report-id:
+    description: 'ID of saved report (if saveReport was true)'
+  report-url:
+    description: 'URL to view report in GoDiffy dashboard (if generated)'
 
 runs:
-  using: 'composite'
-  steps:
-    - name: Run Godiffy action
-      shell: bash
-      env:
-        INPUT_API_KEY: ${{ inputs.api-key }}
-        INPUT_IMAGES_PATH: ${{ inputs.images-path }}
-        INPUT_SITE_ID: ${{ inputs.site-id }}
-        INPUT_BRANCH: ${{ inputs.branch }}
-        INPUT_COMMIT: ${{ inputs.commit }}
-        INPUT_BASE_URL: ${{ inputs.base-url }}
-        INPUT_CREATE_REPORT: ${{ inputs.create-report }}
-        INPUT_BASELINE_BRANCH: ${{ inputs.baseline-branch }}
-        INPUT_BASELINE_COMMIT: ${{ inputs.baseline-commit }}
-        INPUT_REPORT_NAME: ${{ inputs.report-name }}
-        INPUT_REPORT_DESCRIPTION: ${{ inputs.report-description }}
-        INPUT_COMPARISON_ALGORITHM: ${{ inputs.comparison-algorithm }}
-        INPUT_COMPARISON_THRESHOLD: ${{ inputs.comparison-threshold }}
-      run: |
-        chmod +x ${{ github.action_path }}/main.sh
-        chmod +x ${{ github.action_path }}/upload.sh
-        chmod +x ${{ github.action_path }}/generate-report.sh
-        ${{ github.action_path }}/main.sh
+  using: 'node20'
+  main: 'index.js'
