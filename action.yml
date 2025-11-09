@@ -13,8 +13,8 @@ inputs:
     description: 'GoDiffy Site ID'
     required: true
   images-path:
-    description: 'Path to directory containing screenshots'
-    required: true
+    description: 'Path to directory containing screenshots (not required if only running comparison)'
+    required: false
   base-url:
     description: 'GoDiffy API base URL'
     required: true

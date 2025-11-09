@@ -218,7 +218,7 @@ async function runComparisons({
 async function main() {
   const apiKey = getInput('api-key', { required: true });
   const siteId = getInput('site-id', { required: true });
-  const imagesPath = getInput('images-path', { required: true });
+  const imagesPath = getInput('images-path');
   const baseUrl = getInput('base-url', { required: true });
   const baselineBranch = getInput('baseline-branch', { defaultValue: 'master' });
   const baselineCommitInput = getInput('baseline-commit', { defaultValue: 'latest' });
@@ -232,22 +232,28 @@ async function main() {
 
   logInfo('Starting GoDiffy action v2...');
 
-  // Upload candidate images
-  const candidateUploads = await uploadScreenshots({
-    baseUrl,
-    apiKey,
-    siteId,
-    imagesPath,
-    branch: candidateBranch,
-    commit: candidateCommit,
-  });
-
-  if (!candidateUploads.length) {
-    logWarn('No candidate uploads; nothing to compare.');
-    return;
-  }
-
   const shouldCreateReport = String(createReportInput).toLowerCase() === 'true';
+
+  // Upload candidate images if path provided
+  if (imagesPath) {
+    const candidateUploads = await uploadScreenshots({
+      baseUrl,
+      apiKey,
+      siteId,
+      imagesPath,
+      branch: candidateBranch,
+      commit: candidateCommit,
+    });
+
+    if (!candidateUploads.length) {
+      logWarn('No candidate uploads; nothing to compare.');
+      if (!shouldCreateReport) {
+        return;
+      }
+    }
+  } else {
+    logInfo('No images-path provided; skipping upload step.');
+  }
 
   if (!shouldCreateReport) {
     logInfo('create-report is false; skipping comparison.');
