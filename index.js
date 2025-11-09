@@ -147,6 +147,8 @@ async function captureScreenshots({ configPath, branch }) {
       
       try {
         await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+        // Wait an additional 2 seconds for React hydration and any animations
+        await page.waitForTimeout(2000);
         await page.screenshot({ path: screenshotPath, fullPage: true });
         logInfo(`✓ Saved ${screenshotName}`);
       } catch (err) {
