@@ -50,12 +50,15 @@ while IFS= read -r -d '' file; do
   TEMP_JSON=$(mktemp)
   echo "$JSON_PAYLOAD" > "$TEMP_JSON"
   
+  echo "DEBUG: Uploading to $BASE_URL/api/v2/uploads" >&2
+  echo "DEBUG: JSON payload: $(head -c 200 "$TEMP_JSON")..." >&2
+  
   RESPONSE=$(curl -s -w "\n%{http_code}" \
     -X POST \
     -H "Authorization: Bearer $API_KEY" \
     -H "Content-Type: application/json" \
     -d @"$TEMP_JSON" \
-    "$BASE_URL/api/v2/sites/$SITE_ID/uploads")
+    "$BASE_URL/api/v2/uploads")
   
   rm -f "$TEMP_JSON"
   
