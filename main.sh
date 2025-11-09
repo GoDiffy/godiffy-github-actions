@@ -96,14 +96,6 @@ if [ "$CREATE_REPORT" = "true" ]; then
   fi
   
   echo "DEBUG: Script file permissions: $(ls -la "$GITHUB_ACTION_PATH/generate-report.sh")"
-  echo "DEBUG: Testing script execution..."
-  
-  # Try to execute script directly to test
-  if bash "$GITHUB_ACTION_PATH/generate-report.sh" --help 2>/dev/null; then
-    echo "DEBUG: Script executes successfully"
-  else
-    echo "DEBUG: Script execution test failed"
-  fi
   
   REPORT_RESULTS=$(bash "$GITHUB_ACTION_PATH/generate-report.sh" \
     "$BASE_URL" \
