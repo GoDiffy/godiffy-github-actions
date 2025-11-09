@@ -216,6 +216,17 @@ async function runComparisons({
 }
 
 async function main() {
+  // Debug: Log all INPUT_ environment variables
+  logInfo('=== DEBUG: Environment Variables ===');
+  Object.keys(process.env)
+    .filter(key => key.startsWith('INPUT_'))
+    .forEach(key => {
+      const value = process.env[key];
+      const displayValue = key === 'INPUT_API_KEY' ? '[REDACTED]' : value;
+      logInfo(`${key}=${displayValue}`);
+    });
+  logInfo('=== END DEBUG ===');
+
   const apiKey = getInput('api-key', { required: true });
   const siteId = getInput('site-id', { required: true });
   const imagesPath = getInput('images-path');
