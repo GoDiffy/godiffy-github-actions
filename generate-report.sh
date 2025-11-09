@@ -27,21 +27,35 @@ echo "Fetching baseline uploads from $BASELINE_BRANCH@$BASELINE_COMMIT..."
 # Fetch baseline uploads
 if [ "$BASELINE_COMMIT" = "latest" ]; then
   echo "Looking for latest uploads on branch $BASELINE_BRANCH" >&2
-  # Get uploads for the specific site
+
+  # Fetch all uploads for the site
   BASELINE_URL="$BASE_URL/api/v2/uploads?siteId=$(printf %s "$SITE_ID" | jq -sRr @uri)"
-  
   BASELINE_RESPONSE=$(curl -s \
     -H "Authorization: Bearer $API_KEY" \
     "$BASELINE_URL")
-  
-  # Filter by branch and get most recent commit
-  BASELINE_COMMIT=$(echo "$BASELINE_RESPONSE" | jq -r --arg branch "$BASELINE_BRANCH" '.[] | select(.branch == $branch) | .commit' | head -n1)
-  
-  if [ -z "$BASELINE_COMMIT" ]; then
-    echo "::error::No uploads found for site $SITE_ID on branch $BASELINE_BRANCH"
+
+  # If API responded with an error object, surface it clearly
+  if echo "$BASELINE_RESPONSE" | jq -e 'type == "object" and has("error")' >/dev/null 2>&1; then
+    echo "::error::Failed to fetch baseline uploads for latest commit on branch $BASELINE_BRANCH: $(echo "$BASELINE_RESPONSE" | jq -r '.error')"
     exit 1
   fi
-  
+
+  # Expect an array of uploads; filter by branch and pick latest by createdAt
+  BASELINE_COMMIT=$(echo "$BASELINE_RESPONSE" |
+    jq -r --arg branch "$BASELINE_BRANCH" '
+      map(select(.branch == $branch))
+      | sort_by(.createdAt // "")
+      | reverse
+      | .[0].commit // empty
+    ')
+
+  if [ -z "$BASELINE_COMMIT" ]; then
+    echo "::error::No uploads found for site $SITE_ID on branch $BASELINE_BRANCH when resolving latest baseline commit"
+    # Uncomment for debugging if needed:
+    # echo "DEBUG: Baseline latest response: $BASELINE_RESPONSE" >&2
+    exit 1
+  fi
+
   echo "Using latest commit: $BASELINE_COMMIT"
 fi
 
