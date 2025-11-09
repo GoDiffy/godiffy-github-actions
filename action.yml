@@ -49,13 +49,15 @@ inputs:
 
 outputs:
   total-comparisons:
-    description: 'Number of images compared'
+    description: 'Total number of comparisons performed'
   passed-comparisons:
     description: 'Number of comparisons that passed threshold'
   failed-comparisons:
     description: 'Number of comparisons that failed threshold'
   average-similarity:
     description: 'Average similarity percentage (0-100) across all comparisons'
+  threshold-met:
+    description: 'Whether the average similarity met the configured threshold (true/false)'
   report-id:
     description: 'ID of saved report (if saveReport was true)'
   report-url:

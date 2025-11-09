@@ -348,8 +348,25 @@ async function main() {
   const baselineBranch = getInput('baseline-branch', { defaultValue: 'master' });
   const baselineCommitInput = getInput('baseline-commit', { defaultValue: 'latest' });
   const createReportInput = getInput('create-report', { defaultValue: 'false' });
-  const algorithm = getInput('algorithm', { defaultValue: 'pixelmatch' });
-  const threshold = getInput('threshold', { defaultValue: '0.9' });
+  let algorithm = getInput('algorithm', { defaultValue: 'pixelmatch' });
+  let threshold = getInput('threshold', { defaultValue: '0.9' });
+  
+  // Read config file to get algorithm and threshold if not provided as inputs
+  let config = null;
+  try {
+    const configContent = await fs.readFile(configPath, 'utf-8');
+    config = JSON.parse(configContent);
+    
+    // Use config values if inputs weren't explicitly provided
+    if (!getInput('algorithm') && config.algorithm) {
+      algorithm = config.algorithm;
+    }
+    if (!getInput('threshold') && config.threshold !== undefined) {
+      threshold = String(config.threshold / 100); // Convert percentage to decimal
+    }
+  } catch (err) {
+    // Config file not found or invalid, use defaults
+  }
 
   const candidateBranch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME || '';
   const candidateCommit = process.env.GITHUB_SHA || '';
@@ -367,15 +384,8 @@ async function main() {
       branch: candidateBranch,
     });
     
-    // Read screenshots directory from config
-    try {
-      const configContent = await fs.readFile(configPath, 'utf-8');
-      const config = JSON.parse(configContent);
-      imagesPath = config.screenshotsDir || './screenshots';
-    } catch (err) {
-      logWarn(`Could not read screenshotsDir from config, using default: ${err.message}`);
-      imagesPath = './screenshots';
-    }
+    // Use screenshots directory from config
+    imagesPath = config?.screenshotsDir || './screenshots';
   }
 
   // Upload candidate images if path provided
@@ -448,11 +458,26 @@ async function main() {
     setOutput('report-url', `${baseUrl}/sites/${siteId}/reports/${comparisonResults.reportId}`);
   }
 
+  // Check if results meet threshold
+  const thresholdPercent = Number(threshold) * 100;
+  const avgSimilarity = comparisonResults.averageSimilarity || 0;
+  const meetsThreshold = avgSimilarity >= thresholdPercent;
+  
+  setOutput('threshold-met', meetsThreshold ? 'true' : 'false');
+
   if (comparisonResults.failedComparisons > 0) {
     logWarn(`${comparisonResults.failedComparisons} comparisons failed (average similarity: ${comparisonResults.averageSimilarity}%)`);
   } else {
     logInfo(`All comparisons passed (average similarity: ${comparisonResults.averageSimilarity}%)`);
   }
+
+  // Fail the action if threshold not met
+  if (!meetsThreshold) {
+    logError(`Visual regression check failed: Average similarity ${avgSimilarity.toFixed(2)}% is below threshold of ${thresholdPercent}%`);
+    process.exit(1);
+  }
+  
+  logInfo(`✓ Visual regression check passed: ${avgSimilarity.toFixed(2)}% similarity (threshold: ${thresholdPercent}%)`);
 }
 
 main().catch((err) => {
