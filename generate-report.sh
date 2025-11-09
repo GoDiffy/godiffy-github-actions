@@ -154,8 +154,15 @@ while IFS= read -r candidate; do
   fi
 done < <(echo "$CANDIDATE_UPLOADS" | jq -c '.[]')
 
-echo "DEBUG: Total comparisons built: ${#COMPARISONS[@]}"
-echo "DEBUG: Comparisons array: $(printf '%s\n' "${COMPARISONS[@]}" | jq -s '.')"
+echo "DEBUG: Total comparisons built: ${#COMPARISONS[@]}" >&2
+if [ ${#COMPARISONS[@]} -gt 0 ]; then
+  echo "DEBUG: First comparison: ${COMPARISONS[0]}" >&2
+  echo "DEBUG: Building comparisons JSON..." >&2
+  COMPARISONS_JSON=$(printf '%s\n' "${COMPARISONS[@]}" | jq -s '.')
+  echo "DEBUG: Comparisons JSON built successfully" >&2
+else
+  echo "DEBUG: No comparisons to process" >&2
+fi
 
 if [ ${#COMPARISONS[@]} -eq 0 ]; then
   echo "::error::No matching baseline images found. Ensure $BASELINE_BRANCH has uploaded screenshots."
