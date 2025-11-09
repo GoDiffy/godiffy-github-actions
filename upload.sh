@@ -14,10 +14,14 @@ FAILED=()
 
 # Find all image files recursively
 while IFS= read -r -d '' file; do
+  echo "DEBUG: Processing file: $file" >&2
+  echo "DEBUG: IMAGES_PATH: $IMAGES_PATH" >&2
   # Calculate relative path from images directory
   RELATIVE_PATH=$(realpath --relative-to="$IMAGES_PATH" "$file")
+  echo "DEBUG: RELATIVE_PATH: $RELATIVE_PATH" >&2
   # Ensure leading slash
   API_PATH="/$RELATIVE_PATH"
+  echo "DEBUG: API_PATH: $API_PATH" >&2
   
   echo "Uploading $API_PATH..." >&2
   
