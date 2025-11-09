@@ -53,6 +53,14 @@ while IFS= read -r -d '' file; do
   echo "DEBUG: Uploading to $BASE_URL/api/v2/uploads" >&2
   echo "DEBUG: JSON payload: $(head -c 200 "$TEMP_JSON")..." >&2
   
+  # Test basic connectivity first
+  echo "DEBUG: Testing basic connectivity..." >&2
+  HEALTH_CHECK=$(curl -s -w "\n%{http_code}" "$BASE_URL/health" 2>/dev/null || echo "000")
+  echo "DEBUG: Health check HTTP code: $HEALTH_CHECK" >&2
+  
+  echo "DEBUG: Full curl command:" >&2
+  echo "curl -s -w \"\\n%{http_code}\" -X POST -H \"Authorization: Bearer [REDACTED]\" -H \"Content-Type: application/json\" -d @\"$TEMP_JSON\" \"$BASE_URL/api/v2/uploads\"" >&2
+  
   RESPONSE=$(curl -s -w "\n%{http_code}" \
     -X POST \
     -H "Authorization: Bearer $API_KEY" \
