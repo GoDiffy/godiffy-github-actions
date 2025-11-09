@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# Debug trap to catch where script fails
+trap 'echo "DEBUG: Script failed at line $LINENO with exit code $?" >&2' ERR
+
+echo "DEBUG: Script started with $# arguments"
+echo "DEBUG: Arguments: $*"
+
 BASE_URL="$1"
 API_KEY="$2"
 SITE_ID="$3"
