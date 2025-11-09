@@ -38,8 +38,9 @@ echo "Fetching baseline uploads from $BASELINE_BRANCH@$BASELINE_COMMIT..."
 # Fetch baseline uploads
 if [ "$BASELINE_COMMIT" = "latest" ]; then
   echo "DEBUG: Looking for latest uploads on branch $BASELINE_BRANCH" >&2
-  # Get all uploads for the site and find the most recent commit for the branch
-  BASELINE_URL="$BASE_URL/api/v2/sites/$SITE_ID/uploads"
+  # Try different endpoints to find uploads
+  echo "DEBUG: Trying /api/v2/uploads endpoint..." >&2
+  BASELINE_URL="$BASE_URL/api/v2/uploads"
   echo "DEBUG: Fetching from: $BASELINE_URL" >&2
   
   BASELINE_RESPONSE=$(curl -s \
@@ -48,13 +49,13 @@ if [ "$BASELINE_COMMIT" = "latest" ]; then
   
   echo "DEBUG: Baseline API response: $BASELINE_RESPONSE" >&2
   
-  # Filter by branch and get the most recent commit
-  BASELINE_COMMIT=$(echo "$BASELINE_RESPONSE" | jq -r --arg branch "$BASELINE_BRANCH" '.uploads[] | select(.branch == $branch) | .commit' | head -n1)
+  # Filter by site and branch, get the most recent commit
+  BASELINE_COMMIT=$(echo "$BASELINE_RESPONSE" | jq -r --arg siteId "$SITE_ID" --arg branch "$BASELINE_BRANCH" '.uploads[] | select(.siteId == $siteId and .branch == $branch) | .commit' | head -n1)
   
   echo "DEBUG: Extracted baseline commit: $BASELINE_COMMIT" >&2
   
   if [ -z "$BASELINE_COMMIT" ]; then
-    echo "::error::No uploads found for branch $BASELINE_BRANCH"
+    echo "::error::No uploads found for site $SITE_ID on branch $BASELINE_BRANCH"
     echo "DEBUG: Full API response was: $BASELINE_RESPONSE" >&2
     exit 1
   fi
