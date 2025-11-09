@@ -31,13 +31,17 @@ function logError(msg) {
 function setOutput(name, value) {
   if (value === undefined || value === null) return;
   const lineValue = String(value);
-  console.log(`::set-output name=${name}::${lineValue}`);
+  
+  // Use new GITHUB_OUTPUT file format (deprecated: ::set-output)
   if (process.env.GITHUB_OUTPUT) {
     try {
       fsSync.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${lineValue}\n`);
-    } catch {
-      // ignore
+    } catch (err) {
+      logWarn(`Failed to write output ${name}: ${err.message}`);
     }
+  } else {
+    // Fallback for older runners
+    console.log(`::set-output name=${name}::${lineValue}`);
   }
 }
 
