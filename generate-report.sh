@@ -123,12 +123,12 @@ COMPARISONS=()
 
 while IFS= read -r candidate; do
   echo "DEBUG: Processing candidate: $candidate"
-  CANDIDATE_PATH=$(echo "$candidate" | jq -r '.path')
+  CANDIDATE_PATH=$(echo "$candidate" | jq -r '.objectKey')
   CANDIDATE_ID=$(echo "$candidate" | jq -r '.id')
   echo "DEBUG: Extracted path: $CANDIDATE_PATH, id: $CANDIDATE_ID"
   
   # Find matching baseline
-  BASELINE_ID=$(echo "$BASELINE_UPLOADS" | jq -r --arg path "$CANDIDATE_PATH" '.[] | select(.path == $path) | .id')
+  BASELINE_ID=$(echo "$BASELINE_UPLOADS" | jq -r --arg path "$CANDIDATE_PATH" '.[] | select(.objectKey == $path) | .id')
   echo "DEBUG: Found baseline ID for path $CANDIDATE_PATH: $BASELINE_ID"
   
   if [ -n "$BASELINE_ID" ]; then
