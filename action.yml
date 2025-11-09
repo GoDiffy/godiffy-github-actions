@@ -13,8 +13,16 @@ inputs:
     description: 'GoDiffy Site ID'
     required: true
   images-path:
-    description: 'Path to directory containing screenshots (not required if only running comparison)'
+    description: 'Path to directory containing screenshots (not required if only running comparison or using capture-screenshots)'
     required: false
+  capture-screenshots:
+    description: 'Whether to capture screenshots from URLs defined in godiffy.json'
+    required: false
+    default: 'false'
+  config-path:
+    description: 'Path to godiffy.json configuration file'
+    required: false
+    default: './godiffy.json'
   base-url:
     description: 'GoDiffy API base URL'
     required: true

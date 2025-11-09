@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import fsSync from 'node:fs';
+import { chromium } from 'playwright';
 
 function getInput(name, { required = false, defaultValue } = {}) {
   // GitHub Actions preserves hyphens in input names, so we need to check both formats
@@ -81,6 +82,69 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
       throw err;
     }
   }
+}
+
+async function captureScreenshots({ configPath, branch }) {
+  logInfo(`Reading configuration from ${configPath}...`);
+  
+  let config;
+  try {
+    const configContent = await fs.readFile(configPath, 'utf-8');
+    config = JSON.parse(configContent);
+  } catch (err) {
+    logError(`Failed to read or parse ${configPath}: ${err.message}`);
+    process.exit(1);
+  }
+
+  // Determine base URL for current branch
+  const baseUrl = config.baseUrls?.[branch] || config.baseUrls?.['master'] || config.baseUrl;
+  if (!baseUrl) {
+    logError('No baseUrl configured in godiffy.json');
+    process.exit(1);
+  }
+
+  const pages = config.pages || [];
+  if (!pages.length) {
+    logWarn('No pages configured in godiffy.json');
+    return;
+  }
+
+  const screenshotsDir = config.screenshotsDir || './screenshots';
+  const viewport = config.viewport || { width: 1280, height: 720 };
+
+  // Ensure screenshots directory exists
+  await fs.mkdir(screenshotsDir, { recursive: true });
+
+  logInfo(`Capturing ${pages.length} screenshots from ${baseUrl}...`);
+
+  const browser = await chromium.launch();
+  const context = await browser.newContext({
+    viewport,
+  });
+  const page = await context.newPage();
+
+  try {
+    for (const pageConfig of pages) {
+      const url = `${baseUrl}${pageConfig.path}`;
+      const screenshotName = `${pageConfig.name}.png`;
+      const screenshotPath = path.join(screenshotsDir, screenshotName);
+
+      logInfo(`Capturing ${url}...`);
+      
+      try {
+        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+        await page.screenshot({ path: screenshotPath, fullPage: true });
+        logInfo(`✓ Saved ${screenshotName}`);
+      } catch (err) {
+        logError(`Failed to capture ${url}: ${err.message}`);
+        process.exit(1);
+      }
+    }
+  } finally {
+    await browser.close();
+  }
+
+  logInfo(`Successfully captured ${pages.length} screenshots to ${screenshotsDir}`);
 }
 
 async function uploadScreenshots({ baseUrl, apiKey, siteId, imagesPath, branch, commit }) {
@@ -263,7 +327,9 @@ async function main() {
 
   const apiKey = getInput('api-key', { required: true });
   const siteId = getInput('site-id', { required: true });
-  const imagesPath = getInput('images-path');
+  let imagesPath = getInput('images-path');
+  const captureScreenshotsInput = getInput('capture-screenshots', { defaultValue: 'false' });
+  const configPath = getInput('config-path', { defaultValue: './godiffy.json' });
   const baseUrl = getInput('base-url', { required: true });
   const baselineBranch = getInput('baseline-branch', { defaultValue: 'master' });
   const baselineCommitInput = getInput('baseline-commit', { defaultValue: 'latest' });
@@ -278,6 +344,25 @@ async function main() {
   logInfo('Starting GoDiffy action v2...');
 
   const shouldCreateReport = String(createReportInput).toLowerCase() === 'true';
+  const shouldCaptureScreenshots = String(captureScreenshotsInput).toLowerCase() === 'true';
+
+  // Capture screenshots if requested
+  if (shouldCaptureScreenshots) {
+    await captureScreenshots({
+      configPath,
+      branch: candidateBranch,
+    });
+    
+    // Read screenshots directory from config
+    try {
+      const configContent = await fs.readFile(configPath, 'utf-8');
+      const config = JSON.parse(configContent);
+      imagesPath = config.screenshotsDir || './screenshots';
+    } catch (err) {
+      logWarn(`Could not read screenshotsDir from config, using default: ${err.message}`);
+      imagesPath = './screenshots';
+    }
+  }
 
   // Upload candidate images if path provided
   if (imagesPath) {
