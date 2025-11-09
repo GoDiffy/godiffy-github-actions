@@ -102,7 +102,11 @@ echo "DEBUG: Baseline uploads count: $(echo "$BASELINE_UPLOADS" | jq '. | length
 echo "DEBUG: Finished counting baseline uploads..." >&2
 
 # Match candidate uploads with baseline uploads by path
-echo "DEBUG: Upload results: $UPLOAD_RESULTS"
+echo "DEBUG: About to print upload results..." >&2
+echo "DEBUG: UPLOAD_RESULTS variable is set: ${UPLOAD_RESULTS+yes}" >&2
+echo "DEBUG: UPLOAD_RESULTS length: ${#UPLOAD_RESULTS}" >&2
+echo "DEBUG: Upload results: $UPLOAD_RESULTS" >&2
+echo "DEBUG: Finished printing upload results..." >&2
 
 # Ensure we have valid JSON and array
 if echo "$UPLOAD_RESULTS" | jq -e 'has("successful")' >/dev/null 2>&1; then
