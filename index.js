@@ -3,8 +3,12 @@ import path from 'node:path';
 import fsSync from 'node:fs';
 
 function getInput(name, { required = false, defaultValue } = {}) {
-  const key = `INPUT_${name.replace(/-/g, '_').replace(/ /g, '_').toUpperCase()}`;
-  const val = process.env[key];
+  // GitHub Actions preserves hyphens in input names, so we need to check both formats
+  const keyWithHyphen = `INPUT_${name.toUpperCase()}`;
+  const keyWithUnderscore = `INPUT_${name.replace(/-/g, '_').replace(/ /g, '_').toUpperCase()}`;
+  
+  const val = process.env[keyWithHyphen] || process.env[keyWithUnderscore];
+  
   if ((val === undefined || val === '') && required && defaultValue === undefined) {
     logError(`Input "${name}" is required but was not provided.`);
     process.exit(1);
