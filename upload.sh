@@ -89,7 +89,7 @@ else
 done < <(find "$IMAGES_PATH" -type f \( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \) -print0)
 
 # Output JSON results
-jq -n \
+jq -c -n \
   --argjson successful "$(printf '%s\n' "${SUCCESSFUL[@]}" | jq -s '.')" \
   --argjson failed "$(printf '%s\n' "${FAILED[@]}" | jq -s '.')" \
   '{successful: $successful, failed: $failed}'
