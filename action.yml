@@ -78,4 +78,16 @@ runs:
     
     - name: Run action
       shell: bash
+      env:
+        INPUT_API-KEY: ${{ inputs.api-key }}
+        INPUT_SITE-ID: ${{ inputs.site-id }}
+        INPUT_IMAGES-PATH: ${{ inputs.images-path }}
+        INPUT_CAPTURE-SCREENSHOTS: ${{ inputs.capture-screenshots }}
+        INPUT_CONFIG-PATH: ${{ inputs.config-path }}
+        INPUT_BASE-URL: ${{ inputs.base-url }}
+        INPUT_BASELINE-BRANCH: ${{ inputs.baseline-branch }}
+        INPUT_BASELINE-COMMIT: ${{ inputs.baseline-commit }}
+        INPUT_CREATE-REPORT: ${{ inputs.create-report }}
+        INPUT_ALGORITHM: ${{ inputs.algorithm }}
+        INPUT_THRESHOLD: ${{ inputs.threshold }}
       run: node ${{ github.action_path }}/index.js
