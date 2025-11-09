@@ -57,7 +57,6 @@ while IFS= read -r -d '' file; do
     -X POST \
     -H "Authorization: Bearer $API_KEY" \
     -H "Content-Type: application/json" \
-    --no-cors \
     -d @"$TEMP_JSON" \
     "$BASE_URL/api/v2/uploads")
   
