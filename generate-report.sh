@@ -53,11 +53,22 @@ if [ "$BASELINE_COMMIT" = "latest" ]; then
 fi
 
 # Fetch baseline uploads for specific commit
+echo "DEBUG: About to fetch baseline uploads..." >&2
+BASELINE_URL="$BASE_URL/api/v2/sites/$SITE_ID/uploads?branch=$(printf %s "$BASELINE_BRANCH" | jq -sRr @uri)&commit=$(printf %s "$BASELINE_COMMIT" | jq -sRr @uri)"
+echo "DEBUG: Baseline URL: $BASELINE_URL" >&2
+
 BASELINE_RESPONSE=$(curl -s \
   -H "Authorization: Bearer $API_KEY" \
-  "$BASE_URL/api/v2/sites/$SITE_ID/uploads?branch=$(printf %s "$BASELINE_BRANCH" | jq -sRr @uri)&commit=$(printf %s "$BASELINE_COMMIT" | jq -sRr @uri)")
+  "$BASELINE_URL")
 
-echo "DEBUG: Baseline response: $BASELINE_RESPONSE"
+CURL_EXIT_CODE=$?
+echo "DEBUG: Curl exit code: $CURL_EXIT_CODE" >&2
+echo "DEBUG: Baseline response: $BASELINE_RESPONSE" >&2
+
+if [ $CURL_EXIT_CODE -ne 0 ]; then
+  echo "DEBUG: Curl failed with exit code $CURL_EXIT_CODE" >&2
+  exit 1
+fi
 
 # Handle different response structures
 # Check if response is an array directly or has .uploads property
