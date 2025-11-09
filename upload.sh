@@ -28,24 +28,23 @@ while IFS= read -r -d '' file; do
   # Encode image as base64
   BASE64_DATA=$(base64 -w 0 "$file")
   
-  # Create JSON payload
-  JSON_PAYLOAD=$(jq -n \
-    --arg siteId "$SITE_ID" \
-    --arg branch "$BRANCH" \
-    --arg commit "$COMMIT" \
-    --arg path "$API_PATH" \
-    --arg fileName "$FILENAME" \
-    --arg contentType "$CONTENT_TYPE" \
-    --arg data "$BASE64_DATA" \
-    '{
-      siteId: $siteId,
-      branch: $branch,
-      commit: $commit,
-      path: $path,
-      fileName: $fileName,
-      contentType: $contentType,
-      data: $data
-    }')
+  # Create JSON payload using printf to avoid command line length limits
+  JSON_PAYLOAD=$(printf '{
+    "siteId": "%s",
+    "branch": "%s", 
+    "commit": "%s",
+    "path": "%s",
+    "fileName": "%s",
+    "contentType": "%s",
+    "data": "%s"
+  }' \
+    "$SITE_ID" \
+    "$BRANCH" \
+    "$COMMIT" \
+    "$API_PATH" \
+    "$FILENAME" \
+    "$CONTENT_TYPE" \
+    "$BASE64_DATA")
   
   # Upload using JSON with base64 data
   RESPONSE=$(curl -s -w "\n%{http_code}" \
