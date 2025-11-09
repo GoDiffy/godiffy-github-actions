@@ -86,6 +86,14 @@ if [ "$CREATE_REPORT" = "true" ]; then
   echo "DEBUG: REPORT_DESCRIPTION=$REPORT_DESCRIPTION"
   echo "DEBUG: ALGORITHM=$ALGORITHM"
   echo "DEBUG: THRESHOLD=$THRESHOLD"
+  echo "DEBUG: GITHUB_ACTION_PATH=$GITHUB_ACTION_PATH"
+  echo "DEBUG: Checking if script exists: $GITHUB_ACTION_PATH/generate-report.sh"
+  
+  if [ ! -f "$GITHUB_ACTION_PATH/generate-report.sh" ]; then
+    echo "DEBUG: Script not found at $GITHUB_ACTION_PATH/generate-report.sh"
+    ls -la "$GITHUB_ACTION_PATH/"
+    exit 1
+  fi
   
   REPORT_RESULTS=$(bash "$GITHUB_ACTION_PATH/generate-report.sh" \
     "$BASE_URL" \
