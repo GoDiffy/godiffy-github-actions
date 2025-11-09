@@ -55,9 +55,8 @@ if [ "$BASELINE_COMMIT" = "latest" ]; then
 
 
   if [ -z "$BASELINE_COMMIT" ]; then
-    echo "::error::No uploads found for site $SITE_ID on branch $BASELINE_BRANCH when resolving latest baseline commit" >&2
-    echo "DEBUG: Baseline latest response (no matching branch): $BASELINE_RESPONSE" >&2
-    exit 1
+    echo "::warning::No baseline uploads found for site $SITE_ID on branch $BASELINE_BRANCH when resolving latest baseline commit; skipping report generation." >&2
+    exit 0
   fi
 
   echo "Using latest commit: $BASELINE_COMMIT"
@@ -110,8 +109,8 @@ done < <(echo "$CANDIDATE_UPLOADS" | jq -c '.[]')
 echo "Built ${#COMPARISONS[@]} comparisons"
 
 if [ ${#COMPARISONS[@]} -eq 0 ]; then
-  echo "::error::No matching baseline images found. Ensure $BASELINE_BRANCH has uploaded screenshots."
-  exit 1
+  echo "::warning::No matching baseline images found for branch $BASELINE_BRANCH; skipping report generation." >&2
+  exit 0
 fi
 
 echo "Creating report with ${#COMPARISONS[@]} comparisons..."
