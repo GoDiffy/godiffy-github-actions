@@ -53,6 +53,32 @@ async function* walkFiles(dir) {
   }
 }
 
+async function fetchWithRetry(url, options, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      
+      // Retry on 502/503/504 (server errors that might be cold starts)
+      if (attempt < maxRetries && (res.status === 502 || res.status === 503 || res.status === 504)) {
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000); // Exponential backoff: 1s, 2s, 4s
+        logWarn(`Server returned ${res.status}, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      return res;
+    } catch (err) {
+      if (attempt < maxRetries) {
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+        logWarn(`Request failed: ${err.message}, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 async function uploadScreenshots({ baseUrl, apiKey, siteId, imagesPath, branch, commit }) {
   const successful = [];
 
@@ -74,7 +100,7 @@ async function uploadScreenshots({ baseUrl, apiKey, siteId, imagesPath, branch, 
     const contentType = ext === '.png' ? 'image/png' : 'image/jpeg';
 
     const url = new URL('/api/v2/uploads', baseUrl);
-    const res = await fetch(url, {
+    const res = await fetchWithRetry(url, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -130,7 +156,7 @@ async function resolveBaselineCommit({ baseUrl, apiKey, siteId, baselineBranch, 
   const url = new URL('/api/v2/uploads', baseUrl);
   url.searchParams.set('siteId', siteId);
 
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     headers: { Authorization: `Bearer ${apiKey}` },
   });
 
@@ -192,7 +218,7 @@ async function runComparisons({
     payload.reportDescription = `Visual regression report for ${candidateBranch} (${candidateCommit}) vs ${baselineBranch} (${baselineCommit}).`;
   }
 
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
