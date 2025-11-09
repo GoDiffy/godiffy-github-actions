@@ -74,14 +74,26 @@ BASELINE_RESPONSE=$(curl -s \
 CURL_EXIT_CODE=$?
 echo "DEBUG: Curl exit code: $CURL_EXIT_CODE" >&2
 echo "DEBUG: Baseline response: $BASELINE_RESPONSE" >&2
+echo "DEBUG: About to check CURL_EXIT_CODE: $CURL_EXIT_CODE" >&2
 
 if [ $CURL_EXIT_CODE -ne 0 ]; then
   echo "DEBUG: Curl failed with exit code $CURL_EXIT_CODE" >&2
   exit 1
 fi
 
+echo "DEBUG: Passed CURL_EXIT_CODE check, about to process baseline response" >&2
+
 # Handle response structure - API returns direct array
+echo "DEBUG: About to process baseline response with jq..."
 BASELINE_UPLOADS=$(echo "$BASELINE_RESPONSE" | jq -c '.')
+JQ_EXIT_CODE=$?
+echo "DEBUG: jq exit code: $JQ_EXIT_CODE" >&2
+
+if [ $JQ_EXIT_CODE -ne 0 ]; then
+  echo "DEBUG: jq failed with exit code $JQ_EXIT_CODE" >&2
+  echo "DEBUG: Baseline response that failed: $BASELINE_RESPONSE" >&2
+  exit 1
+fi
 
 echo "DEBUG: Baseline uploads: $BASELINE_UPLOADS"
 echo "DEBUG: Baseline uploads count: $(echo "$BASELINE_UPLOADS" | jq '. | length')"
@@ -98,14 +110,19 @@ else
 fi
 
 echo "DEBUG: Candidate uploads: $CANDIDATE_UPLOADS"
+echo "DEBUG: Candidate uploads count: $(echo "$CANDIDATE_UPLOADS" | jq '. | length')"
+echo "DEBUG: About to start comparison loop..."
 COMPARISONS=()
 
 while IFS= read -r candidate; do
+  echo "DEBUG: Processing candidate: $candidate"
   CANDIDATE_PATH=$(echo "$candidate" | jq -r '.path')
   CANDIDATE_ID=$(echo "$candidate" | jq -r '.id')
+  echo "DEBUG: Extracted path: $CANDIDATE_PATH, id: $CANDIDATE_ID"
   
   # Find matching baseline
   BASELINE_ID=$(echo "$BASELINE_UPLOADS" | jq -r --arg path "$CANDIDATE_PATH" '.[] | select(.path == $path) | .id')
+  echo "DEBUG: Found baseline ID for path $CANDIDATE_PATH: $BASELINE_ID"
   
   if [ -n "$BASELINE_ID" ]; then
     COMPARISON=$(jq -n \
