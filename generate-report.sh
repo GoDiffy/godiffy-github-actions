@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+# set -e  # Temporarily disabled to see actual error
 
 echo "=== SCRIPT STARTED ===" >&2
 
