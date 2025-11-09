@@ -62,5 +62,20 @@ outputs:
     description: 'URL to view report in GoDiffy dashboard (if generated)'
 
 runs:
-  using: 'node20'
-  main: 'index.js'
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    
+    - name: Install dependencies
+      shell: bash
+      run: |
+        cd ${{ github.action_path }}
+        npm install --production
+        npx playwright install chromium --with-deps
+    
+    - name: Run action
+      shell: bash
+      run: node ${{ github.action_path }}/index.js
