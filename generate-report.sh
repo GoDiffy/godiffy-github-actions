@@ -51,8 +51,7 @@ if [ "$BASELINE_COMMIT" = "latest" ]; then
 
   if [ -z "$BASELINE_COMMIT" ]; then
     echo "::error::No uploads found for site $SITE_ID on branch $BASELINE_BRANCH when resolving latest baseline commit"
-    # Uncomment for debugging if needed:
-    # echo "DEBUG: Baseline latest response: $BASELINE_RESPONSE" >&2
+    echo "DEBUG: Baseline latest response: $BASELINE_RESPONSE" >&2
     exit 1
   fi
 
