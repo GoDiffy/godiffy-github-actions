@@ -211,8 +211,34 @@ async function uploadScreenshots({ baseUrl, apiKey, siteId, imagesPath, branch, 
 
     if (!res.ok) {
       const err = (body && body.error) || `status ${res.status}`;
-      logError(`Failed to upload ${objectKey}: ${err}`);
-      process.exit(1);
+      
+      // Handle specific error cases
+      if (res.status === 402) {
+        // Payment Required - Storage limit exceeded
+        core.setFailed(`\n❌ Storage Limit Exceeded!\n\n${err}\n\n🔗 Upgrade your plan at https://godiffy.app/pricing`);
+        process.exit(1);
+      } else if (res.status === 401) {
+        // Unauthorized - Invalid API key
+        core.setFailed(`\n❌ Authentication Failed!\n\nInvalid API key. Please check your GODIFFY_API_KEY secret in GitHub repository settings.\n\nError: ${err}`);
+        process.exit(1);
+      } else if (res.status === 404) {
+        // Not Found - Site doesn't exist
+        core.setFailed(`\n❌ Site Not Found!\n\nThe site ID '${siteId}' was not found. Please verify your site ID in the GoDiffy dashboard.\n\nError: ${err}`);
+        process.exit(1);
+      } else if (res.status === 413) {
+        // Payload Too Large
+        core.setFailed(`\n❌ File Too Large!\n\nScreenshot file '${objectKey}' exceeds the maximum size limit. Consider optimizing your screenshots.\n\nError: ${err}`);
+        process.exit(1);
+      } else if (res.status === 429) {
+        // Rate Limit Exceeded
+        core.warning(`\n⚠️  Rate Limit Exceeded!\n\nToo many requests. Waiting 30 seconds before retrying...\n\nError: ${err}`);
+        // Could implement retry logic here
+        process.exit(1);
+      } else {
+        // Generic error
+        logError(`Failed to upload ${objectKey}: ${err}`);
+        process.exit(1);
+      }
     }
 
     if (!body || !body.upload || !body.upload.id) {
