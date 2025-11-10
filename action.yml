@@ -24,8 +24,9 @@ inputs:
     required: false
     default: './godiffy.json'
   base-url:
-    description: 'GoDiffy API base URL'
-    required: true
+    description: 'GoDiffy API base URL (for internal use)'
+    required: false
+    default: 'https://godiffy-backend.up.railway.app'
   baseline-branch:
     description: 'Branch to use as baseline'
     required: false
